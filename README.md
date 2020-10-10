@@ -23,7 +23,7 @@ For more information and related downloads for Sendy Server and other products, 
 <a href="https://sendy.co/?ref=Hcurv" title=""><img src="https://sendy.co/images/banners/125x125_var2.jpg" alt="Check out Sendy, a self hosted newsletter app that lets you send emails 100x cheaper via Amazon SES." width="125" height="125"/></a>
 
 # How to use this image
-Starting a Sendy instance is simple. 
+Starting a Sendy instance is simple.
 
 ```console
 $ docker run -d \
@@ -31,21 +31,22 @@ $ docker run -d \
   -e SENDY_FQDN=campaigns.example.com \
   -e MYSQL_HOST=db_sendy \
   -e MYSQL_PASSWORD=db_password \
+  -v ./data/uploads:/var/www/html/uploads \
   bubbajames/sendy:tag
 ```
 ... where `sendy` is the name you want to assign to your container, `campaigns.example.com` is your FQDN of Sendy server, `db_sendy` is your database server instance, `db_password` is the database user's password and `tag` is the tag specifying the Sendy version you want. See the list of tags above.
 
-## Environment Varaibles 
-### `SENDY_PROTOCOL` (Optional)  
-HTTP protocol used in Sendy APP_PATH (`http` or `https`). Default: `http` 
+## Environment Varaibles
+### `SENDY_PROTOCOL` (Optional)
+HTTP protocol used in Sendy APP_PATH (`http` or `https`). Default: `http`
 ### `SENDY_FQDN` (required)
-The fully qualified domain name of your Sendy installation.  This must match the FQDN associated with your license.  You can [purchase a license here](https://sendy.co/?ref=Hcurv).   
-### `MYSQL_HOST` (required) 
-The MySQL server hosting your Sendy database.  
+The fully qualified domain name of your Sendy installation.  This must match the FQDN associated with your license.  You can [purchase a license here](https://sendy.co/?ref=Hcurv).
+### `MYSQL_HOST` (required)
+The MySQL server hosting your Sendy database.
 ### `MYSQL_DATABASE` (optional)
-The Sendy database name. Default: `sendy`.    
-### `MYSQL_USER` (optional) 
-Database user.  Default: `sendy`.   
+The Sendy database name. Default: `sendy`.
+### `MYSQL_USER` (optional)
+Database user.  Default: `sendy`.
 ### `MYSQL_PASSWORD` (required)
 Database user's password. Not recommended for sensitive data! (see: Docker Secrets)
 
@@ -64,8 +65,8 @@ Pretty minimalistic `Dockerfile` as everything you need is already bundled.  Jus
 ```dockerfile
 FROM bubbajames/sendy:4.1
 
-# ... additional apache/php configurations here ... 
-# e.g. copy your SSL Certificate and apache configurations if not using a load balancer.  
+# ... additional apache/php configurations here ...
+# e.g. copy your SSL Certificate and apache configurations if not using a load balancer.
 ```
 ### Start a Sendy instance
 The following starts an instance specifying an environment file.
@@ -93,9 +94,9 @@ The latest `docker-compose.yml` and sample files are available from the image [r
 version: "3.7"
 
 # Volumes for persisted data.
-volumes: 
+volumes:
   data_sendy:
-    labels: 
+    labels:
       co.sendy.description: "Data volume for Sendy Database."
 
 # Secret files so they're not exposed via 'docker inspect'
@@ -103,7 +104,7 @@ secrets:
   db_password:
     file: secrets/db_password.txt
   db_root_password:
-    file: secrets/db_root_password.txt      
+    file: secrets/db_root_password.txt
 
 services:
   # Database: MySQL
@@ -111,33 +112,35 @@ services:
     hostname: db_sendy
     container_name: db_sendy
     image: mysql:5.6
-    env_file: 
+    env_file:
       - sendy.env
     environment:
       MYSQL_ROOT_PASSWORD_FILE: /run/secrets/db_root_password
     secrets:
       - db_root_password
-      - db_password      
-    volumes: 
+      - db_password
+    volumes:
       - data_sendy:/var/lib/mysql
 
   # WebApp: Apache2+PHP+Sendy
   sendy:
     hostname: sendy
     container_name: sendy
-    depends_on: 
+    depends_on:
       - db_sendy
     image: sendy:4.1.0
-    build: 
+    build:
       context: .
       # Uncomment to enabled XDEBUG build
       # target: debug
-    env_file: 
+    env_file:
       - sendy.env
     secrets:
-      - db_password 
+      - db_password
     ports:
       - 8080:80
+    volumes:
+      - ./data/uploads:/var/www/html/uploads
 
   # Load Balancer: HAProxy
   load-balancer:
@@ -146,9 +149,9 @@ services:
     image: lb_sendy
     build:
       context: .
-      dockerfile: haproxy/Dockerfile   
-    env_file: 
-      - sendy.env      
+      dockerfile: haproxy/Dockerfile
+    env_file:
+      - sendy.env
     ports:
       - 80:80
       - 443:443
@@ -174,9 +177,9 @@ Set up autoresponders to incoming emails.  This job executes every 1 minute to d
 ## Import Lists
 Import list of contacts in CSV files.  This job executes every 1 minute to determine if any Import List jobs have been created and initiate CSV file import if needed.
 
-# Shoutouts 
+# Shoutouts
 ## Brad Touesnard
-Please read Brad Touesnard's article [How to Create Your Own SSL Certificate Authority for Local HTTPS Development](https://deliciousbrains.com/ssl-certificate-authority-for-local-https-development/) which inspired the `generateSSLCerticate.sh` script used in this project. 
+Please read Brad Touesnard's article [How to Create Your Own SSL Certificate Authority for Local HTTPS Development](https://deliciousbrains.com/ssl-certificate-authority-for-local-https-development/) which inspired the `generateSSLCerticate.sh` script used in this project.
 
 # License
 
