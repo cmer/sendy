@@ -82,7 +82,7 @@ apache2_check_config() {
 _apache2_want_help() {
   local arg
   for arg; do
-    case "$arg" in 
+    case "$arg" in
       -'?'|-h|-v|-V|-l|-L|-t|-S|-M)
         return 0
         ;;
@@ -92,13 +92,17 @@ _apache2_want_help() {
 }
 
 _main() {
-  log_info "Entrypoint script for Sendy Server ${SENDY_VERSION} started."
+  log_info "Entrypoint script for Sendy Server started."
 
   # if command starts with an option, prepend php
   if [ "${1:0:1}" = '-' ]; then
     log_info "Command-line option found.  Appending 'php'. "
     set -- php "$@"
   fi
+
+  # make uploads folder writable
+  mkdir -p /var/www/html/uploads
+  chmod -R 777 /var/www/html/uploads
 
   # skip setup if we are not running apache2
   if [ "$1" = 'apache2-foreground' ] && ! _apache2_want_help "$@"; then

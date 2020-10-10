@@ -15,8 +15,6 @@ FROM php:7.4.8-apache as sendy
 ARG SENDY_VER=4.1.0.1
 ARG ARTIFACT_DIR=4.1.0
 
-ENV SENDY_VERSION ${SENDY_VER}
-
 RUN apt -qq update && apt -qq upgrade -y \
   # Install unzip cron
   && apt -qq install -y unzip cron  \
@@ -24,7 +22,7 @@ RUN apt -qq update && apt -qq upgrade -y \
   # Install php extension mysqli
   && docker-php-ext-install gettext mysqli \
   # Remove unused packages
-  && apt autoremove -y 
+  && apt autoremove -y
 
 # Copy artifacts
 COPY ./artifacts/${ARTIFACT_DIR}/ /tmp
@@ -72,4 +70,4 @@ FROM sendy as debug
 RUN pecl channel-update pecl.php.net \
   && pecl install xdebug \
   && docker-php-ext-enable xdebug \
-  && rm -rf /tmp/pear 
+  && rm -rf /tmp/pear
